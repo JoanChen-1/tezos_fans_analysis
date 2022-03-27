@@ -1,7 +1,4 @@
 import * as React from 'react';
-// import Button from '@mui/material/Button';
-// import Box from '@mui/material/Box';
-// import ColorfulChip from "./shared/ColorfulChip";
 import EnhancedTableHead from "./shared/EnhancedTableHead";
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -17,16 +14,16 @@ const rows = [
     numeric: false,
     label: "address"
   },
-  {
-    id: "balance",
-    numeric: false,
-    label: "balance"
-  },
-  {
-    id: "akaDao",
-    numeric: false,
-    label: "akaDao"
-  },
+  // {
+  //   id: "balance",
+  //   numeric: false,
+  //   label: "balance"
+  // },
+  // {
+  //   id: "akaDao",
+  //   numeric: false,
+  //   label: "akaDao"
+  // },
   {
     id: "collection",
     numeric: false,
@@ -35,7 +32,7 @@ const rows = [
 ];
 
 export default function ListTable(props) {
-    const { fansInfos } = props; //, handleShowDetails, selected, predictValues, colors 
+    const { fansInfos } = props;
     return (
       <div sx={{
         overflowX: "auto",
@@ -60,7 +57,7 @@ export default function ListTable(props) {
                     {d.address}
                   </Grid>
                   </TableCell>
-                  <TableCell
+                  {/* <TableCell
                     component="th"
                     scope="row"
                     align='center'
@@ -73,13 +70,13 @@ export default function ListTable(props) {
                     align='center'
                   >
                     {d.akaDao}
-                  </TableCell>
+                  </TableCell> */}
                   <TableCell
                     component="th"
                     scope="row"
                     align='center'
                   >
-                    {d.collection.map(token=>(token+","))}
+                    {d.tokenList.map(token=>(token+","))}
                   </TableCell>
                 </TableRow>
               ))}

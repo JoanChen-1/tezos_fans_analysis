@@ -21,7 +21,7 @@ export default function Home() {
     "address": "000",
     "balance": "000",
     "akaDao": "000",
-    "collection": ["000", "000", "000"]
+    "tokenList": ["000", "000", "000"]
   }]);
   const [loading, setLoading] = useState(false);
   const [openAlert, setOpenAlert] = useState(false);
@@ -37,16 +37,20 @@ export default function Home() {
     setLoading(true);
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-    const tokenList = data.getAll('token');
-    const result = await getFansInfo(
-        data.get('minBalance'),data.get('maxBalance'),tokenList
+    const CollectionList = data.getAll('token');
+    const fansInfos = await getFansInfo(
+        data.get('minBalance'),data.get('maxBalance'),CollectionList
     );
 
-    if (result === null){//there is no data
+    if (fansInfos.length <= 0){//there is no matching data
       setOpenAlert(true);
+      setFansInfos([{"address": "000",
+      "balance": "000",
+      "akaDao": "000",
+      "tokenList": ["000", "000", "000"]}]);
     }
     else{
-      setFansInfos(result);
+      setFansInfos(fansInfos);
     }
     setLoading(false);
   };
@@ -70,20 +74,26 @@ export default function Home() {
             }}>
               <TextField
                 id="minBalance"
-                label="min balance"
+                label="min balance (10^-6 xtz)"
                 name="minBalance"
                 color="secondary"
                 sx={{ minWidth: 10, fontFamily: 'Karla, sans-serif'}}
                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
                 autoFocus
+                required
+                placeholder="default:0000000"
+
               />
               <TextField
                 id="maxBalance"
-                label="max balance"
+                label="max balance (10^-6 xtz)"
                 name="maxBalance"
                 color="secondary"
                 sx={{ minWidth: 10, fontFamily: 'Karla, sans-serif'}}
                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+                required
+                placeholder="default:10000000"
+
               />
               <TextField
                 id="token"
@@ -92,6 +102,8 @@ export default function Home() {
                 color="secondary"
                 sx={{ minWidth: 10, fontFamily: 'Karla, sans-serif'}}
                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+                required
+                placeholder="679074"
               />
               <TextField
                 id="token"
@@ -100,6 +112,7 @@ export default function Home() {
                 color="secondary"
                 sx={{ minWidth: 10, fontFamily: 'Karla, sans-serif'}}
                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+                placeholder="679074"
               />
               <TextField
                 id="token"
@@ -108,6 +121,7 @@ export default function Home() {
                 color="secondary"
                 sx={{ minWidth: 10, fontFamily: 'Karla, sans-serif'}}
                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
+                placeholder="679074"
               />
             </Box>
             <Button

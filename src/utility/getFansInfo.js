@@ -31,16 +31,11 @@ export const getCollectionByAddress = async(address) => {
 
     const res = await fetch(endpoint, {
         method: "GET",
-        headers: {
-            "Accept": "application/json",
-            "Content-type": "application/json",
-            "Access-Control-Allow-Origin": "no-cors",
-        }
     });
 
     if (res.ok) {
         const jsonRes = await res.json();
-        const tokenList = jsonRes.token.map(item => item.tokenId);
+        const tokenList = jsonRes.tokens.map(item => item.tokenId.toString());
         return tokenList;
     }
     else{
@@ -59,16 +54,16 @@ export const getFansInfo = async(minBalance, maxBalance, collectionList) => {
     //1. get address by balance
     const addressList = await getAddressByBalance(minBalance, maxBalance);
     //2. get collection by address
-    const fansInfos = [];
-    addressList.forEach(async(address) => {
+    let fansInfos = addressList.map(async(address) => {
         const tokenList = await getCollectionByAddress(address);
-        // console.log(tokenList);
         if(hasCollection(tokenList, collectionList)){
-            fansInfos.push({address: address, tokenList: tokenList});
-        };
+            return {address: address, tokenList: tokenList};
+        }
+        else{
+            return {address: address, tokenList: []};
+        }
     })
-    if (fansInfos.length > 0){
-        return fansInfos;
-    }
-    return null;
+    fansInfos = await Promise.all(fansInfos);
+    fansInfos = fansInfos.filter(item => item.tokenList.length > 0);
+    return fansInfos;
 }
