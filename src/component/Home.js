@@ -46,8 +46,9 @@ export default function Home() {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const CollectionList = data.getAll('token');
+    const CreatorList = data.getAll('creator_address');
     const fansInfos = await getFansInfo(
-        data.get('minBalance'),data.get('maxBalance'),CollectionList,data.get('creator_address')
+        data.get('minBalance'),data.get('maxBalance'),CollectionList,CreatorList
     );
     if (fansInfos === "fail") {
       console.log("fail");
@@ -143,6 +144,14 @@ export default function Home() {
                 sx={{ minWidth: 10, fontFamily: 'Karla, sans-serif'}}
                 inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
                 placeholder="token id 3"
+              />
+              <TextField
+                id="creator_address"
+                label="creator address"
+                name="creator_address"
+                color="secondary"
+                sx={{ minWidth: 10, fontFamily: 'Karla, sans-serif'}}
+                placeholder="creator address"
               />
               <TextField
                 id="creator_address"
