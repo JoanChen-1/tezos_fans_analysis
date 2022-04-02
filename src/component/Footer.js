@@ -17,6 +17,15 @@ export default function Footer(props){
           測試版 Open Beta
         </Typography>
         <Copyright productName={productName}/>
+        <Typography
+          variant="subtitle1"
+          align="center"
+          color="text.secondary"
+          component="p"
+          sx={{fontFamily: 'Karla, sans-serif'}}
+        >
+          Powered by TzKT API
+        </Typography>
       </Box>
     );
 }

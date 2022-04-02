@@ -5,22 +5,26 @@ const akaswapGetAccountBaseUrl = 'https://akaswap.com/api/v2/accounts/';
 export const getAddressByBalance = async(minBalance, maxBalance) => {
     const endpoint 
     = `${tzktGetAccountBaseUrl}balance.gt=${minBalance}
-    &balance.lt=${maxBalance}&sort.desc=balance`;
+    &balance.lt=${maxBalance}&sort.desc=balance&limit=1000&select=address,balance&type=user`;
+    try{
+        const res = await fetch(endpoint, {
+            method: "GET",
+            headers: {
+                "Accept": "application/json",
+                "Content-type": "application/json",
+            }
+        });
 
-    const res = await fetch(endpoint, {
-        method: "GET",
-        headers: {
-            "Accept": "application/json",
-            "Content-type": "application/json",
+        if (res.ok) {
+            const jsonRes = await res.json();
+            const addressList = jsonRes.map(item => item.address);//filter(item => item.activeTokensCount > 0)
+            return addressList;
         }
-    });
-
-    if (res.ok) {
-        const jsonRes = await res.json();
-        const addressList = jsonRes.map(item => item.address);
-        return addressList;
+        else{
+            return "fail";
+        }
     }
-    else{
+    catch{
         return "fail";
     }
 }
@@ -28,17 +32,43 @@ export const getAddressByBalance = async(minBalance, maxBalance) => {
 // given an address, return its collections
 export const getCollectionByAddress = async(address) => {
     const endpoint = `${akaswapGetAccountBaseUrl}${address}/collections`;
+    try{
+        const res = await fetch(endpoint, {
+            method: "GET",
+        });
 
-    const res = await fetch(endpoint, {
-        method: "GET",
-    });
-
-    if (res.ok) {
-        const jsonRes = await res.json();
-        const tokenList = jsonRes.tokens.map(item => item.tokenId.toString());
-        return tokenList;
+        if (res.ok) {
+            const jsonRes = await res.json();
+            const tokenList = jsonRes.tokens.map(item => item.tokenId.toString());
+            return tokenList;
+        }
+        else{
+            return "fail";
+        }
     }
-    else{
+    catch{
+        return "fail";
+    }
+}
+
+// given an address, return creator;s creations
+export const getCreationsList = async(address) => {
+    const endpoint = `${akaswapGetAccountBaseUrl}${address}/creations`;
+    try{
+        const res = await fetch(endpoint, {
+            method: "GET",
+        });
+
+        if (res.ok) {
+            const jsonRes = await res.json();
+            const tokenList = jsonRes.tokens.map(item => item.tokenId.toString());
+            return tokenList;
+        }
+        else{
+            return "fail";
+        }
+    }
+    catch{
         return "fail";
     }
 }
@@ -50,13 +80,27 @@ export const hasCollection = (tokenList, collectionList) => {
 }
 
 // main function, return an array of objects
-export const getFansInfo = async(minBalance, maxBalance, collectionList) => {
+export const getFansInfo = async(minBalance, maxBalance, collectionList, creatorAddress) => {
+    //0. get creation list
+    let creationsList = await getCreationsList(creatorAddress);
+    if (creationsList === "fail") {
+        return "fail";
+    }
+    else if (creationsList.length <= 0){
+        return -1;
+    }
     //1. get address by balance
-    const addressList = await getAddressByBalance(minBalance, maxBalance);
+    let addressList = await getAddressByBalance(minBalance, maxBalance);
+    if (addressList === "fail"){
+        return "fail";
+    }
     //2. get collection by address
     let fansInfos = addressList.map(async(address) => {
         const tokenList = await getCollectionByAddress(address);
-        if(hasCollection(tokenList, collectionList)){
+        if (tokenList === "fail"){
+            return "fail";
+        }
+        else if (hasCollection(tokenList, creationsList)){
             return {address: address, tokenList: tokenList};
         }
         else{
@@ -64,6 +108,9 @@ export const getFansInfo = async(minBalance, maxBalance, collectionList) => {
         }
     })
     fansInfos = await Promise.all(fansInfos);
+    if (fansInfos.includes("fail")){
+        return "fail";
+    }
     fansInfos = fansInfos.filter(item => item.tokenList.length > 0);
     return fansInfos;
 }

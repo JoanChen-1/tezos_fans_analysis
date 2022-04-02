@@ -8,13 +8,13 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 });
 
 export default function AlertSnackbars(props) {
-  const { handleClose, open } = props;
+  const { handleClose, open, level } = props;
 
   return (
     <Stack spacing={2} sx={{ width: '100%' }}>
       <Snackbar open={open} autoHideDuration={6000} onClose={handleClose}>
-        <Alert onClose={handleClose} severity="info" sx={{ width: '100%' }}>
-          "No match address"
+        <Alert onClose={handleClose} severity={level} sx={{ width: '100%' }}>
+           There is no matching fan.
         </Alert>
       </Snackbar>
     </Stack>
