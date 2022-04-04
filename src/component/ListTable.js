@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useState, useEffect } from 'react';
 import EnhancedTableHead from "./shared/EnhancedTableHead";
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
