@@ -35,11 +35,11 @@ export default function Header(props) {
               >
               {productName}
             </Typography>
-          <Box sx={{backgroundColor: 'rgba(255, 255, 255, 1)', mt: -7, py: 2}}>
-          </Box>
+            <Box sx={{backgroundColor: 'rgba(255, 255, 255, 1)', mt: -10, py: 3}}>
+            </Box>
             <Typography variant="h5" align="center" color="#2d102c" paragraph
               sx={{fontFamily: 'Karla, sans-serif'}}>
-              {productDescription}<br/><br/><br/><br/><br/><br/>
+              {productDescription}<br/><br/>
             </Typography>
         </Container>
       </Box>

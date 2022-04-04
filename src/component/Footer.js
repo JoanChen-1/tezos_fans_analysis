@@ -24,7 +24,7 @@ export default function Footer(props){
           component="p"
           sx={{fontFamily: 'Karla, sans-serif'}}
         >
-          Powered by TzKT API
+          Powered by TzKT API & Akaswap API
         </Typography>
       </Box>
     );

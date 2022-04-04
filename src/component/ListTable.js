@@ -18,36 +18,15 @@ const rows = [
     numeric: false,
     label: "user address"
   },
-  // {
-  //   id: "balance",
-  //   numeric: false,
-  //   label: "balance"
-  // },
-  // {
-  //   id: "akaDao",
-  //   numeric: false,
-  //   label: "akaDao"
-  // },
   {
     id: "collection",
     numeric: false,
-    label: "collection"
+    label: "total collections"
   }
 ];
 
 export default function ListTable(props) {
-    const { fansInfos } = props;//checked, 
-    // const [renderedFansInfos, setRenderedFansInfos] = useState(fansInfos);
-
-    // useEffect(() => {
-    //   if(checked){
-    //     const array = fansInfos.filter(fansInfo => fansInfo.tokenList.length > 0);
-    //     setRenderedFansInfos(array);
-    //   }
-    //   else{
-    //     setRenderedFansInfos(fansInfos);
-    //   }
-    // }, [fansInfos, checked]);
+    const { fansInfos } = props;
 
     return (
       <div sx={{
@@ -76,20 +55,12 @@ export default function ListTable(props) {
                   <TableCell
                     component="th"
                     scope="row"
-                    align='center'
                   >
-                    <Grid container 
-                      direction="row"
-                      alignItems="center"
-                      justifyContent="center"
-                    >
-                      {d.address}
-                    </Grid>
+                    {d.address}
                   </TableCell>
                   <TableCell
                     component="th"
                     scope="row"
-                    align='center'
                   >
                     {d.collectionList.map(token=>(token+" "))}
                   </TableCell>

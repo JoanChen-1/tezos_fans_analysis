@@ -35,6 +35,9 @@ export const getCollectionByAddress = async(address) => {
     try{
         const res = await fetch(endpoint, {
             method: "GET",
+            header: {
+                "Access-Control-Allow-Origin": "no-cors",
+            }
         });
 
         if (res.ok) {
@@ -51,28 +54,6 @@ export const getCollectionByAddress = async(address) => {
     }
 }
 
-// // given an address, return creator's creations
-// export const getCreationsList = async(address) => {
-//     const endpoint = `${akaswapGetAccountBaseUrl}${address}/creations`;
-//     try{
-//         const res = await fetch(endpoint, {
-//             method: "GET",
-//         });
-
-//         if (res.ok) {
-//             const jsonRes = await res.json();
-//             const tokenList = jsonRes.tokens.map(item => item.tokenId.toString());
-//             return tokenList;
-//         }
-//         else{
-//             return "fail";
-//         }
-//     }
-//     catch{
-//         return "fail";
-//     }
-// }
-
 // given a list of tokenId, return whether there is any tokenId in the collections
 export const hasCollection = (collectionList, tokenList) => {
     const has = tokenList.some(item => collectionList.includes(item));
@@ -88,13 +69,13 @@ export const getDatabyCollection = async(minBalance, maxBalance, tokenList) => {
     if (addressList === "fail"){
         return "fail";
     }
-
     //2. get collection by address
     let fansInfos = addressList.map(async(address) => {
         const collectionList = await getCollectionByAddress(address);
         if (collectionList === "fail"){
             return "fail";
         }
+        
         // union: has one of the token in the token list
         else if (hasCollection(collectionList, tokenList)){
             return {address: address, collectionList: collectionList};
@@ -107,9 +88,13 @@ export const getDatabyCollection = async(minBalance, maxBalance, tokenList) => {
     
     // kick out the address having nothing in the token list
     fansInfos = fansInfos.filter(item => item.collectionList.length > 0);
-    
-    if (fansInfos.includes("fail")){
-        return "fail";
+    fansInfos.forEach(item => {
+        if (item.collectionList === "fail"){
+            return "fail";
+        }
+    })
+    if (fansInfos.length <= 0){
+        return -1;
     }
     return fansInfos;
 }
@@ -162,7 +147,7 @@ export const getDatabyCreator = async(method, creatorList) => {
         return -1;
     }
     let ownerList = [];
-
+    
     // 2-1 get union
     if (method === "union"){
         // initialization
@@ -184,8 +169,8 @@ export const getDatabyCreator = async(method, creatorList) => {
             // pop out the first array
             ownerLists.shift();
             // get intersection
-            ownerLists.forEach((ownerList) => {
-                ownerList = ownerList.filter(item => ownerList.includes(item));
+            ownerLists.forEach((list) => {
+                ownerList = list.filter(item => ownerList.includes(item));
             })
         }
     }
@@ -193,7 +178,6 @@ export const getDatabyCreator = async(method, creatorList) => {
     if (ownerList.length <= 0){
         return -1;
     }
-
     //3. get collection by owners' addresses
     let fansInfos = ownerList.map(async(address) => {
         const collectionList = await getCollectionByAddress(address);
@@ -201,8 +185,10 @@ export const getDatabyCreator = async(method, creatorList) => {
     })
     fansInfos = await Promise.all(fansInfos);
 
-    if (fansInfos.includes("fail")){
-        return "fail";
-    }
+    fansInfos.forEach(item => {
+        if (item.collectionList === "fail"){
+            return "fail";
+        }
+    })
     return fansInfos;
 }
