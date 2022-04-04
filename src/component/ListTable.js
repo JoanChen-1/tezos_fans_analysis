@@ -91,7 +91,7 @@ export default function ListTable(props) {
                     scope="row"
                     align='center'
                   >
-                    {d.tokenList.map(token=>(token+" "))}
+                    {d.collectionList.map(token=>(token+" "))}
                   </TableCell>
                 </TableRow>
               ))}
