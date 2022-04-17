@@ -79,7 +79,7 @@ const calculateMatchNum = (aList, bList) => {
 }
 
 const assignMatchNumProperty = (collectionsByCollectors, creations) => {
-    collectionsByCollectors.map(collector => {
+    collectionsByCollectors.forEach(collector => {
         const numOfMatch = calculateMatchNum(collector.collections, creations);
         collector.numOfMatch = numOfMatch;
     })
