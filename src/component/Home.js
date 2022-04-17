@@ -25,7 +25,7 @@ const productDescription = '';
 
 export default function Home() {
   const [fansInfos, setFansInfos] = useState([{
-    "address": " ", "collectionList": [" ", " "]
+    "address": " ", "collections": [" ", " "]
   }]);
   const [loading, setLoading] = useState(false);
   const [openAlert, setOpenAlert] = useState(false);
@@ -54,26 +54,24 @@ export default function Home() {
     const data = new FormData(event.currentTarget);
     let result;
     if (search === 'collection') {
-      const collectionList = data.getAll('token');
       result = await getDatabyCollection(
-          data.get('minBalance'),data.get('maxBalance'),collectionList
+          data.get('address'),data.getAll('token'),data.getAll('numOfTokens')
       );
     }
     else {
-      const creatorList = data.getAll('creator_address');
-      result = await getDatabyCreator(unionCondition, creatorList);
+      result = await getDatabyCreator(unionCondition, data.getAll('addresses'));
     }
     if (result === "fail") {
       console.log("fail");
       setOpenAlert(true);
       setAlertLevel('error');
-      setFansInfos([{"address": " ", "collectionList": [" ", " "]}]);
+      setFansInfos([{"address": " ", "collections": [" ", " "]}]);
     }
     else if (result === -1){//there is no matching data
       console.log("no data");
       setOpenAlert(true);
       setAlertLevel('info');
-      setFansInfos([{"address": " ", "collectionList": [" ", " "]}]);
+      setFansInfos([{"address": " ", "collections": [" ", " "]}]);
     }
     else{
       console.log("success");
@@ -108,47 +106,34 @@ export default function Home() {
               <Box sx={{
                 display: 'grid',
                 gap: 1,
-                gridTemplateColumns: 'repeat(4, 1fr)',
+                gridTemplateColumns: 'repeat(3, 1fr)',
                 mb: 2
               }}>
                 <TextField
-                  id="minBalance"
-                  label="min balance (10^-6 xtz)"
-                  name="minBalance"
+                  id="address"
+                  label="your address"
+                  name="address"
                   color="secondary"
                   sx={{ minWidth: 10, fontFamily: 'Karla, sans-serif'}}
-                  inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-                  autoFocus
-                  required
-                  placeholder="default:0000000"
-                />
-                <TextField
-                  id="maxBalance"
-                  label="max balance (10^-6 xtz)"
-                  name="maxBalance"
-                  color="secondary"
-                  sx={{ minWidth: 10, fontFamily: 'Karla, sans-serif'}}
-                  inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-                  required
-                  placeholder="default:10000000"
+                  placeholder="tz..."
                 />
                 <TextField
                   id="token"
-                  label="collection"
+                  label="must-have collection"
                   name="token"
                   color="secondary"
                   sx={{ minWidth: 10, fontFamily: 'Karla, sans-serif'}}
                   inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-                  placeholder="token id 1"
+                  placeholder="token id"
                 />
                 <TextField
-                  id="token"
-                  label="collection"
-                  name="token"
+                  id="numOfTokens"
+                  label="own at least how many number of your creations"
+                  name="numOfTokens"
                   color="secondary"
                   sx={{ minWidth: 10, fontFamily: 'Karla, sans-serif'}}
                   inputProps={{ inputMode: 'numeric', pattern: '[0-9]*' }}
-                  placeholder="token id 2"
+                  placeholder="1"
                 />
               </Box>
               )}
@@ -168,25 +153,25 @@ export default function Home() {
                   <ToggleButton value="intersection">Intersection</ToggleButton>
                 </ToggleButtonGroup>
                 <TextField
-                  id="creator_address"
+                  id="addresses"
                   label="creator's address"
-                  name="creator_address"
+                  name="addresses"
                   color="secondary"
                   sx={{ minWidth: 10, fontFamily: 'Karla, sans-serif'}}
                   placeholder="tz..."
                 />
                 <TextField
-                  id="creator_address"
+                  id="addresses"
                   label="creator's address"
-                  name="creator_address"
+                  name="addresses"
                   color="secondary"
                   sx={{ minWidth: 10, fontFamily: 'Karla, sans-serif'}}
                   placeholder="tz..."
                 />
                 <TextField
-                  id="creator_address"
+                  id="addresses"
                   label="creator's address"
-                  name="creator_address"
+                  name="addresses"
                   color="secondary"
                   sx={{ minWidth: 10, fontFamily: 'Karla, sans-serif'}}
                   placeholder="tz..."

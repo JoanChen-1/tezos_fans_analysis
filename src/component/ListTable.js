@@ -10,7 +10,7 @@ const rows = [
   {
     id: "id",
     numeric: false,
-    label: "id"
+    label: ""
   },
   {
     id: "address",
@@ -20,7 +20,7 @@ const rows = [
   {
     id: "collection",
     numeric: false,
-    label: "total collections"
+    label: "total collections (maximun number of item: 30)"
   }
 ];
 
@@ -61,7 +61,7 @@ export default function ListTable(props) {
                     component="th"
                     scope="row"
                   >
-                    {d.collectionList.map(token=>(token+" "))}
+                    {d.collections.map(token=>(token+" "))}
                   </TableCell>
                 </TableRow>
               ))}

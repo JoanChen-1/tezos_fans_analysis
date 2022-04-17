@@ -1,125 +1,130 @@
-const tzktGetAccountBaseUrl = 'https://api.tzkt.io/v1/accounts?';
 const akaswapGetAccountBaseUrl = 'https://akaswap.com/api/v2/accounts/';
 
-// given a range of balance, return a list of addresses 
-export const getAddressByBalance = async(minBalance, maxBalance) => {
-    const endpoint 
-    = `${tzktGetAccountBaseUrl}balance.gt=${minBalance}
-    &balance.lt=${maxBalance}&sort.desc=balance&limit=1000&select=address,balance&type=user`;
-    try{
-        const res = await fetch(endpoint, {
-            method: "GET",
-            headers: {
-                "Accept": "application/json",
-                "Content-type": "application/json",
-            }
-        });
-
-        if (res.ok) {
-            const jsonRes = await res.json();
-            const addressList = jsonRes.map(item => item.address);//filter(item => item.activeTokensCount > 0)
-            return addressList;
-        }
-        else{
-            return "fail";
-        }
-    }
-    catch{
-        return "fail";
-    }
-}
-
 // given an address, return its collections
-export const getCollectionByAddress = async(address) => {
-    const endpoint = `${akaswapGetAccountBaseUrl}${address}/collections`;
+const getCollectionByAddress = async(address) => {
+    const endpoint = `${akaswapGetAccountBaseUrl}${address}/collections?limit=30`;
+    const res = await fetch(endpoint, { method: "GET" });
+
+    if (res.ok) {
+        const jsonRes = await res.json();
+        const tokenList = jsonRes.tokens.map(item => item.tokenId.toString());
+        return tokenList;
+    }
+    else{
+        return "fail";
+    }
+}
+
+
+// given an address, return its creations
+const getCreationsByAddress = async(address) => {
+    const endpoint = `${akaswapGetAccountBaseUrl}${address}/creations?limit=30`;
+    const res = await fetch(endpoint, { method: "GET"});
+
+    if (res.ok) {
+        const jsonRes = await res.json();
+        const tokens = jsonRes.tokens.map(item => item.tokenId.toString());
+        return tokens;
+    }
+    else{
+        return "fail";
+    }
+}
+
+const filterCollectorsByToken = (jsonRes, token) => {
+    let collectors = [];
+    jsonRes.tokens.some( t => {
+        if (t.tokenId.toString() === token) {
+            collectors = Object.keys(t.owners);
+            console.log(t);
+            return true;
+        }
+        else { return false; }
+    })
+    return collectors;
+}
+
+// get all owner list by creator's address and token
+const getCollectorsByAddressNToken = async(address, token) => {
+    token = token[0];
+    const endpoint = `${akaswapGetAccountBaseUrl}${address}/creations?limit=30`;
+    const res = await fetch(endpoint, { method: "GET" });
+
+    if (res.ok) {
+        const jsonRes = await res.json();
+        const collectors = filterCollectorsByToken(jsonRes, token);
+        return collectors;
+    }
+    else{
+        return "fail";
+    }
+}
+
+const getCollectionsByMultipleAddress = async(addresses) => {
+    const result = addresses.map(async address => {
+        try{
+            const collections = await getCollectionByAddress(address);
+            return {address: address, collections: collections};
+        }
+        catch{
+            return {address: address, collections: ["fail"]};
+        }
+    });
+    return Promise.all(result);
+}
+
+const calculateMatchNum = (aList, bList) => {
+    const intersection = aList.filter(item => bList.includes(item));
+    return intersection.length;
+}
+
+const assignMatchNumProperty = (collectionsByCollectors, creations) => {
+    collectionsByCollectors.map(collector => {
+        const numOfMatch = calculateMatchNum(collector.collections, creations);
+        collector.numOfMatch = numOfMatch;
+    })
+    return collectionsByCollectors;
+}
+
+// main function #1
+export const getDatabyCollection = async(address, token, num) => {
     try{
-        const res = await fetch(endpoint, {
-            method: "GET",
-            header: {
-                "Access-Control-Allow-Origin": "no-cors",
-            }
-        });
+        const collectorsByToken = await getCollectorsByAddressNToken(address, token);
 
-        if (res.ok) {
-            const jsonRes = await res.json();
-            const tokenList = jsonRes.tokens.map(item => item.tokenId.toString());
-            return tokenList;
-        }
-        else{
-            return "fail";
-        }
-    }
-    catch{
-        return "fail";
-    }
-}
+        let collectionsByCollectors = await getCollectionsByMultipleAddress(collectorsByToken);
 
-// given a list of tokenId, return whether there is any tokenId in the collections
-export const hasCollection = (collectionList, tokenList) => {
-    const has = tokenList.some(item => collectionList.includes(item));
-    return has;
-}
-
-// main function #1, return an array of objects
-export const getDatabyCollection = async(minBalance, maxBalance, tokenList) => {
-
-    //1. get address list by balance
-    if ( minBalance > maxBalance ) { return "fail"; }
-    let addressList = await getAddressByBalance(minBalance, maxBalance);
-    if (addressList === "fail"){
-        return "fail";
-    }
-    //2. get collection by address
-    let fansInfos = addressList.map(async(address) => {
-        const collectionList = await getCollectionByAddress(address);
-        if (collectionList === "fail"){
-            return "fail";
-        }
+        const creations = await getCreationsByAddress(address);
         
-        // union: has one of the token in the token list
-        else if (hasCollection(collectionList, tokenList)){
-            return {address: address, collectionList: collectionList};
+        collectionsByCollectors = assignMatchNumProperty(collectionsByCollectors, creations);
+        console.log(collectionsByCollectors);
+
+        const fans = collectionsByCollectors.filter(collector => collector.numOfMatch >= num);
+        if (fans.length <= 0){
+            return -1;
         }
-        else{// kick out the address having nothing in the token list
-            return {address: address, collectionList: []};
-        }
-    })
-    fansInfos = await Promise.all(fansInfos);
-    
-    // kick out the address having nothing in the token list
-    fansInfos = fansInfos.filter(item => item.collectionList.length > 0);
-    fansInfos.forEach(item => {
-        if (item.collectionList === "fail"){
-            return "fail";
-        }
-    })
-    if (fansInfos.length <= 0){
-        return -1;
+        return fans;
     }
-    return fansInfos;
+    catch{
+        return "fail";
+    }
 }
 
 
 
 
-// get owner list by creator's address
-export const getOwnerList = async(address) => {
-    const endpoint = `${akaswapGetAccountBaseUrl}${address}/creations`;
-    try{
-        const res = await fetch(endpoint, {
-            method: "GET",
-        });
+// get all owner list by creator's address
+const getCollectorsList = async(address) => {
+    const endpoint = `${akaswapGetAccountBaseUrl}${address}/creations?limit=30`;
+    const res = await fetch(endpoint, {
+        method: "GET",
+    });
 
-        if (res.ok) {
-            const jsonRes = await res.json();
-            const result = jsonRes.tokens.map(token=>Object.keys(token.owners)).flat();
-            return result;
-        }
-        else{
-            return "fail";
-        }
+    if (res.ok) {
+        const jsonRes = await res.json();
+        const result = jsonRes.tokens.map(token=>Object.keys(token.owners)).flat();
+        return result;
     }
-    catch{
+    else{
         return "fail";
     }
 }
@@ -135,7 +140,7 @@ export const getDatabyCreator = async(method, creatorList) => {
     creatorList = creatorList.filter(item => item !== "");
     let hasOwner = false;
     let ownerLists = creatorList.map (async(creatorAddress) => {
-        let subOwnerList = await getOwnerList(creatorAddress);
+        let subOwnerList = await getCollectorsList(creatorAddress);
         if ( subOwnerList.length > 0){ hasOwner = true; }
         return subOwnerList;
     })
@@ -180,13 +185,13 @@ export const getDatabyCreator = async(method, creatorList) => {
     }
     //3. get collection by owners' addresses
     let fansInfos = ownerList.map(async(address) => {
-        const collectionList = await getCollectionByAddress(address);
-        return {address: address, collectionList: collectionList};
+        const collections = await getCollectionByAddress(address);
+        return {address: address, collections: collections};
     })
     fansInfos = await Promise.all(fansInfos);
 
     fansInfos.forEach(item => {
-        if (item.collectionList === "fail"){
+        if (item.collections === "fail"){
             return "fail";
         }
     })
